@@ -10,6 +10,8 @@ function MazeGrid({ width = 15, height = 15 }) {
   }, []);
 
   const bfs = (startNode: number[]) => {
+    const gridHeight = maze.length;
+    const gridWidth = gridHeight > 0 ? maze[0].length : 0;
     const queue = [startNode];
     const visited = new Set(`${startNode[0]}, ${startNode[1]}`);
 
@@ -53,9 +55,9 @@ function MazeGrid({ width = 15, height = 15 }) {
         const ny = y + dy;
         if (
           nx >= 0 &&
-          nx < width &&
+          nx < gridWidth &&
           ny >= 0 &&
-          ny < height &&
+          ny < gridHeight &&
           !visited.has(`${nx}, ${ny}`)
         ) {
           visited.add(`${nx}, ${ny}`);
@@ -75,6 +77,8 @@ function MazeGrid({ width = 15, height = 15 }) {
   };
 
   const dfs = (startNode: number[]) => {
+    const gridHeight = maze.length;
+    const gridWidth = gridHeight > 0 ? maze[0].length : 0;
     const stack = [startNode];
     const visited = new Set(`${startNode[0]}, ${startNode[1]}`);
 
@@ -119,9 +123,9 @@ function MazeGrid({ width = 15, height = 15 }) {
         const ny = y + dy;
         if (
           nx >= 0 &&
-          nx < width &&
+          nx < gridWidth &&
           ny >= 0 &&
-          ny < height &&
+          ny < gridHeight &&
           !visited.has(`${nx}, ${ny}`)
         ) {
           visited.add(`${nx}, ${ny}`);
@@ -149,13 +153,15 @@ function MazeGrid({ width = 15, height = 15 }) {
     timeoutIds.forEach(clearTimeout);
     setTimeoutIds([]);
 
-    // Adjust dimensions to include extra space for the bottom and right walls
-    const matrix: string[][] = [];
+    // Adjust dimensions so the maze has odd width and height
+    const mazeWidth = width % 2 === 0 ? width - 1 : width;
+    const mazeHeight = height % 2 === 0 ? height - 1 : height;
 
     // Create the initial matrix filled with 'wall'
-    for (let i = 0; i < height; i++) {
-      const row = [];
-      for (let j = 0; j < width; j++) {
+    const matrix: string[][] = [];
+    for (let i = 0; i < mazeHeight; i++) {
+      const row = [] as string[];
+      for (let j = 0; j < mazeWidth; j++) {
         row.push('wall');
       }
       matrix.push(row);
@@ -170,14 +176,18 @@ function MazeGrid({ width = 15, height = 15 }) {
 
     const isCellValid = (x: number, y: number) => {
       return (
-        y >= 0 && x >= 0 && x < width && y < height && matrix[y][x] === 'wall'
+        y >= 0 &&
+        x >= 0 &&
+        x < mazeWidth &&
+        y < mazeHeight &&
+        matrix[y][x] === 'wall'
       );
     };
 
     const carvePath = (x: number, y: number) => {
       matrix[y][x] = 'path';
 
-      const directions = dirs.sort(() => Math.random() - 0.5);
+      const directions = [...dirs].sort(() => Math.random() - 0.5);
 
       for (const [dx, dy] of directions) {
         const nx = x + dx * 2;
@@ -195,7 +205,7 @@ function MazeGrid({ width = 15, height = 15 }) {
 
     // Set start and end points
     matrix[1][0] = 'start';
-    matrix[height - 2][width - 1] = 'end';
+    matrix[mazeHeight - 2][mazeWidth - 2] = 'end';
 
     // Set the maze state (assuming you are using setMaze as a state setter)
     setMaze(matrix);
@@ -207,10 +217,10 @@ function MazeGrid({ width = 15, height = 15 }) {
         <button className='maze-button' onClick={() => generateMaze()}>
           Refresh Maze
         </button>
-        <button className='maze-button' onClick={() => bfs([1, 0])}>
+        <button className='maze-button' onClick={() => bfs([0, 1])}>
           Start BFS
         </button>
-        <button className='maze-button' onClick={() => dfs([1, 0])}>
+        <button className='maze-button' onClick={() => dfs([0, 1])}>
           Start DFS
         </button>
       </div>
