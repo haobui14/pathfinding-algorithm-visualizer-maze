@@ -10,19 +10,21 @@ function MazeGrid({ width = 15, height = 15 }) {
   }, []);
 
   const handleBfs = () => {
-    console.log(bfs(maze, [1, 0]));
+    console.log(bfs(maze, [0, 1]));
   };
 
   const handleDfs = () => {
-    console.log(dfs(maze, [1, 0]));
+    console.log(dfs(maze, [0, 1]));
   };
 
   const generateMaze = () => {
-    const matrix: string[][] = [];
+    const mazeWidth = width % 2 === 0 ? width - 1 : width;
+    const mazeHeight = height % 2 === 0 ? height - 1 : height;
 
-    for (let i = 0; i < height; i++) {
+    const matrix: string[][] = [];
+    for (let i = 0; i < mazeHeight; i++) {
       const row: string[] = [];
-      for (let j = 0; j < width; j++) {
+      for (let j = 0; j < mazeWidth; j++) {
         row.push('wall');
       }
       matrix.push(row);
@@ -37,14 +39,18 @@ function MazeGrid({ width = 15, height = 15 }) {
 
     const isCellValid = (x: number, y: number) => {
       return (
-        y >= 0 && x >= 0 && x < width && y < height && matrix[y][x] === 'wall'
+        y >= 0 &&
+        x >= 0 &&
+        x < mazeWidth &&
+        y < mazeHeight &&
+        matrix[y][x] === 'wall'
       );
     };
 
     const carvePath = (x: number, y: number) => {
       matrix[y][x] = 'path';
 
-      const directions = dirs.sort(() => Math.random() - 0.5);
+      const directions = [...dirs].sort(() => Math.random() - 0.5);
 
       for (const [dx, dy] of directions) {
         const nx = x + dx * 2;
@@ -60,7 +66,7 @@ function MazeGrid({ width = 15, height = 15 }) {
     carvePath(1, 1);
 
     matrix[1][0] = 'start';
-    matrix[height - 2][width - 1] = 'end';
+    matrix[mazeHeight - 2][mazeWidth - 2] = 'end';
 
     setMaze(matrix);
   };
