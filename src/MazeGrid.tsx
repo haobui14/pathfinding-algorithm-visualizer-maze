@@ -1,237 +1,104 @@
-import { useEffect, useState } from 'react';
-import './App.css';
+import { useEffect, useState } from "react";
+import "./App.css";
+import { Timer } from "./components/Timer";
+import { RecordsTable } from "./components/RecordsTable";
+import { ControlPanel } from "./components/ControlPanel";
+import { MazeDisplay } from "./components/MazeDisplay";
+import { usePathfindingAlgorithms } from "./hooks/usePathfindingAlgorithms";
+import { useMazeGenerator } from "./hooks/useMazeGenerator";
+
+interface SessionResult {
+  algorithm: string;
+  time: number;
+  timestamp: string;
+}
 
 function MazeGrid({ width = 15, height = 15 }) {
   const [maze, setMaze] = useState<string[][]>([]);
   const [timeoutIds, setTimeoutIds] = useState<number[]>([]);
+  const [isRunning, setIsRunning] = useState(false);
+  const [currentAlgorithm, setCurrentAlgorithm] = useState<string>("");
+  const [sessionResults, setSessionResults] = useState<SessionResult[]>([]);
+  const [showRecordsTable, setShowRecordsTable] = useState(false);
+
+  const { generateMaze: generateMazeMatrix } = useMazeGenerator(width, height);
+  const algorithms = usePathfindingAlgorithms();
 
   useEffect(() => {
-    generateMaze();
+    handleGenerateMaze();
   }, []);
 
-  const bfs = (startNode: number[]) => {
-    const gridHeight = maze.length;
-    const gridWidth = gridHeight > 0 ? maze[0].length : 0;
-    const queue = [startNode];
-    const visited = new Set(`${startNode[0]}, ${startNode[1]}`);
-
-    const visitCell = ([x, y]: [number, number]) => {
-      console.log(x, y);
-
-      setMaze((prevMaze) =>
-        prevMaze.map((row, rowIndex) =>
-          row.map((cell, cellIndex) => {
-            if (rowIndex === y && cellIndex === x) {
-              return cell === 'end' ? 'end' : 'visited';
-            }
-            return cell;
-          })
-        )
-      );
-
-      if (maze[y][x] === 'end') {
-        console.log('path found!');
-        return true;
-      }
-      return false;
-    };
-
-    const step = () => {
-      if (queue.length === 0) {
-        return;
-      }
-
-      const [x, y] = queue.shift()!;
-
-      const dirs = [
-        [0, 1],
-        [1, 0],
-        [0, -1],
-        [-1, 0],
-      ];
-
-      for (const [dx, dy] of dirs) {
-        const nx = x + dx;
-        const ny = y + dy;
-        if (
-          nx >= 0 &&
-          nx < gridWidth &&
-          ny >= 0 &&
-          ny < gridHeight &&
-          !visited.has(`${nx}, ${ny}`)
-        ) {
-          visited.add(`${nx}, ${ny}`);
-          if (maze[ny][nx] === 'path' || maze[ny][nx] === 'end') {
-            if (visitCell([nx, ny])) {
-              return true;
-            }
-            queue.push([nx, ny]);
-          }
-        }
-      }
-      const timeoutId = setTimeout(step, 100);
-      setTimeoutIds((previousTimeoutIds) => [...previousTimeoutIds, timeoutId]);
-    };
-    step();
-    return false;
-  };
-
-  const dfs = (startNode: number[]) => {
-    const gridHeight = maze.length;
-    const gridWidth = gridHeight > 0 ? maze[0].length : 0;
-    const stack = [startNode];
-    const visited = new Set(`${startNode[0]}, ${startNode[1]}`);
-
-    const visitCell = ([x, y]: [number, number]) => {
-      console.log(x, y);
-
-      setMaze((prevMaze) =>
-        prevMaze.map((row, rowIndex) =>
-          row.map((cell, cellIndex) => {
-            if (rowIndex === y && cellIndex === x) {
-              return cell === 'end' ? 'end' : 'visited';
-            }
-            return cell;
-          })
-        )
-      );
-
-      if (maze[y][x] === 'end') {
-        console.log('path found!');
-        return true;
-      }
-      return false;
-    };
-
-    const step = () => {
-      if (stack.length === 0) {
-        return;
-      }
-
-      const [x, y] = stack.pop()!;
-      console.log('new step');
-
-      const dirs = [
-        [0, 1],
-        [1, 0],
-        [0, -1],
-        [-1, 0],
-      ];
-
-      for (const [dx, dy] of dirs) {
-        const nx = x + dx;
-        const ny = y + dy;
-        if (
-          nx >= 0 &&
-          nx < gridWidth &&
-          ny >= 0 &&
-          ny < gridHeight &&
-          !visited.has(`${nx}, ${ny}`)
-        ) {
-          visited.add(`${nx}, ${ny}`);
-          if (maze[ny][nx] === 'path' || maze[ny][nx] === 'end') {
-            if (maze[ny][nx] === 'path') {
-              maze[ny][nx] = 'visited';
-              console.log(maze[ny][nx]);
-            }
-            if (visitCell([nx, ny])) {
-              return true;
-            }
-            stack.push([nx, ny]);
-          }
-        }
-      }
-      const timeoutId = setTimeout(step, 100);
-      setTimeoutIds((previousTimeoutIds) => [...previousTimeoutIds, timeoutId]);
-    };
-    step();
-    return false;
-  };
-
-  const generateMaze = () => {
-    //clear any timeout from the queue before refresh the Maze to avoid the ongoing loop of timeout
+  const handleGenerateMaze = () => {
+    // Clear any timeout from the queue before refresh the Maze to avoid the ongoing loop of timeout
     timeoutIds.forEach(clearTimeout);
     setTimeoutIds([]);
+    setIsRunning(false);
+    
+    const newMaze = generateMazeMatrix();
+    setMaze(newMaze);
+  };
 
-    // Adjust dimensions so the maze has odd width and height
-    const mazeWidth = width % 2 === 0 ? width - 1 : width;
-    const mazeHeight = height % 2 === 0 ? height - 1 : height;
+  const handleAlgorithmComplete = (time: number, algorithm: string) => {
+    setIsRunning(false);
+    const timestamp = new Date().toLocaleTimeString();
+    setSessionResults(prev => [...prev, { algorithm, time, timestamp }]);
+    console.log(`Recording: ${algorithm} - ${time}ms at ${timestamp}`);
+  };
 
-    // Create the initial matrix filled with 'wall'
-    const matrix: string[][] = [];
-    for (let i = 0; i < mazeHeight; i++) {
-      const row = [] as string[];
-      for (let j = 0; j < mazeWidth; j++) {
-        row.push('wall');
-      }
-      matrix.push(row);
-    }
+  const handleSetTimeout = (id: number) => {
+    setTimeoutIds(prev => [...prev, id]);
+  };
 
-    const dirs = [
-      [0, 1],
-      [1, 0],
-      [0, -1],
-      [-1, 0],
-    ];
+  const handleStartBFS = () => {
+    setCurrentAlgorithm("BFS");
+    setIsRunning(true);
+    algorithms.bfs([1, 0], maze, setMaze, handleAlgorithmComplete, handleSetTimeout);
+  };
 
-    const isCellValid = (x: number, y: number) => {
-      return (
-        y >= 0 &&
-        x >= 0 &&
-        x < mazeWidth &&
-        y < mazeHeight &&
-        matrix[y][x] === 'wall'
-      );
-    };
+  const handleStartDFS = () => {
+    setCurrentAlgorithm("DFS");
+    setIsRunning(true);
+    algorithms.dfs([1, 0], maze, setMaze, handleAlgorithmComplete, handleSetTimeout);
+  };
 
-    const carvePath = (x: number, y: number) => {
-      matrix[y][x] = 'path';
+  const handleTimerUpdate = (_time: number) => {
+    // Timer updates are handled by the Timer component itself
+    // This could be used for additional logic if needed
+  };
 
-      const directions = [...dirs].sort(() => Math.random() - 0.5);
+  const handleClearResults = () => {
+    setSessionResults([]);
+  };
 
-      for (const [dx, dy] of directions) {
-        const nx = x + dx * 2;
-        const ny = y + dy * 2;
-
-        if (isCellValid(nx, ny)) {
-          matrix[y + dy][x + dx] = 'path';
-          carvePath(nx, ny);
-        }
-      }
-    };
-
-    // Start carving the maze from the (1, 1) position
-    carvePath(1, 1);
-
-    // Set start and end points
-    matrix[1][0] = 'start';
-    matrix[mazeHeight - 2][mazeWidth - 2] = 'end';
-
-    // Set the maze state (assuming you are using setMaze as a state setter)
-    setMaze(matrix);
+  const handleToggleRecords = () => {
+    setShowRecordsTable(!showRecordsTable);
   };
 
   return (
-    <div className='maze-grid'>
-      <div className='button-container'>
-        <button className='maze-button' onClick={() => generateMaze()}>
-          Refresh Maze
-        </button>
-        <button className='maze-button' onClick={() => bfs([0, 1])}>
-          Start BFS
-        </button>
-        <button className='maze-button' onClick={() => dfs([0, 1])}>
-          Start DFS
-        </button>
-      </div>
-      <div className='maze'>
-        {maze.map((row, rowIndex) => (
-          <div className='row' key={`row-${rowIndex}`}>
-            {row.map((cell, rcellIndex) => (
-              <div className={`cell ${cell}`} key={`cell-${rcellIndex}`} />
-            ))}
-          </div>
-        ))}
+    <div className="maze-container" style={{ display: 'flex', gap: '20px' }}>
+      <RecordsTable
+        isVisible={showRecordsTable}
+        sessionResults={sessionResults}
+        onClose={() => setShowRecordsTable(false)}
+        onClearResults={handleClearResults}
+      />
+
+      <div className="maze-grid" style={{ flex: 1 }}>
+        <ControlPanel
+          onGenerateMaze={handleGenerateMaze}
+          onStartBFS={handleStartBFS}
+          onStartDFS={handleStartDFS}
+          showRecordsTable={showRecordsTable}
+          onToggleRecords={handleToggleRecords}
+        />
+        
+        <Timer
+          isRunning={isRunning}
+          currentAlgorithm={currentAlgorithm}
+          onTimerUpdate={handleTimerUpdate}
+        />
+
+        <MazeDisplay maze={maze} />
       </div>
     </div>
   );
