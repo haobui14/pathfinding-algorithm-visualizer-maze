@@ -6,12 +6,12 @@ interface ControlPanelProps {
   onToggleRecords: () => void;
 }
 
-export function ControlPanel({ 
-  onGenerateMaze, 
-  onStartBFS, 
-  onStartDFS, 
-  showRecordsTable, 
-  onToggleRecords 
+export function ControlPanel({
+  onGenerateMaze,
+  onStartBFS,
+  onStartDFS,
+  showRecordsTable,
+  onToggleRecords,
 }: ControlPanelProps) {
   return (
     <div className="button-container">
@@ -24,12 +24,12 @@ export function ControlPanel({
       <button className="maze-button" onClick={onStartDFS}>
         Start DFS
       </button>
-      <button 
-        className="maze-button" 
+      <button
+        className="maze-button"
         onClick={onToggleRecords}
-        style={{ backgroundColor: showRecordsTable ? '#dc3545' : '#6c757d' }}
+        style={{ backgroundColor: showRecordsTable ? "#dc3545" : "#6c757d" }}
       >
-        {showRecordsTable ? 'Hide Records' : 'Show Records'}
+        {showRecordsTable ? "Hide Records" : "Show Records"}
       </button>
     </div>
   );

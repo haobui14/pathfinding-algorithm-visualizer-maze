@@ -33,7 +33,7 @@ function MazeGrid({ width = 15, height = 15 }) {
     timeoutIds.forEach(clearTimeout);
     setTimeoutIds([]);
     setIsRunning(false);
-    
+
     const newMaze = generateMazeMatrix();
     setMaze(newMaze);
   };
@@ -41,24 +41,36 @@ function MazeGrid({ width = 15, height = 15 }) {
   const handleAlgorithmComplete = (time: number, algorithm: string) => {
     setIsRunning(false);
     const timestamp = new Date().toLocaleTimeString();
-    setSessionResults(prev => [...prev, { algorithm, time, timestamp }]);
+    setSessionResults((prev) => [...prev, { algorithm, time, timestamp }]);
     console.log(`Recording: ${algorithm} - ${time}ms at ${timestamp}`);
   };
 
   const handleSetTimeout = (id: number) => {
-    setTimeoutIds(prev => [...prev, id]);
+    setTimeoutIds((prev) => [...prev, id]);
   };
 
   const handleStartBFS = () => {
     setCurrentAlgorithm("BFS");
     setIsRunning(true);
-    algorithms.bfs([1, 0], maze, setMaze, handleAlgorithmComplete, handleSetTimeout);
+    algorithms.bfs(
+      [1, 0],
+      maze,
+      setMaze,
+      handleAlgorithmComplete,
+      handleSetTimeout
+    );
   };
 
   const handleStartDFS = () => {
     setCurrentAlgorithm("DFS");
     setIsRunning(true);
-    algorithms.dfs([1, 0], maze, setMaze, handleAlgorithmComplete, handleSetTimeout);
+    algorithms.dfs(
+      [1, 0],
+      maze,
+      setMaze,
+      handleAlgorithmComplete,
+      handleSetTimeout
+    );
   };
 
   const handleTimerUpdate = (_time: number) => {
@@ -75,7 +87,7 @@ function MazeGrid({ width = 15, height = 15 }) {
   };
 
   return (
-    <div className="maze-container" style={{ display: 'flex', gap: '20px' }}>
+    <div className="maze-container" style={{ display: "flex", gap: "20px" }}>
       <RecordsTable
         isVisible={showRecordsTable}
         sessionResults={sessionResults}
@@ -91,7 +103,7 @@ function MazeGrid({ width = 15, height = 15 }) {
           showRecordsTable={showRecordsTable}
           onToggleRecords={handleToggleRecords}
         />
-        
+
         <Timer
           isRunning={isRunning}
           currentAlgorithm={currentAlgorithm}

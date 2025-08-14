@@ -6,11 +6,15 @@ interface TimerProps {
   onTimerUpdate: (time: number) => void;
 }
 
-export function Timer({ isRunning, currentAlgorithm, onTimerUpdate }: TimerProps) {
+export function Timer({
+  isRunning,
+  currentAlgorithm,
+  onTimerUpdate,
+}: TimerProps) {
   const [timer, setTimer] = useState(0);
 
   useEffect(() => {
-    let interval: number | undefined;
+    let interval: NodeJS.Timeout | undefined;
     if (isRunning) {
       interval = setInterval(() => {
         setTimer((prevTime) => {
@@ -22,7 +26,7 @@ export function Timer({ isRunning, currentAlgorithm, onTimerUpdate }: TimerProps
     } else {
       setTimer(0);
     }
-    
+
     return () => {
       if (interval) clearInterval(interval);
     };
@@ -31,7 +35,7 @@ export function Timer({ isRunning, currentAlgorithm, onTimerUpdate }: TimerProps
   const formatTime = (time: number) => {
     const seconds = Math.floor(time / 1000);
     const milliseconds = time % 1000;
-    return `${seconds}.${milliseconds.toString().padStart(3, '0')}s`;
+    return `${seconds}.${milliseconds.toString().padStart(3, "0")}s`;
   };
 
   return (

@@ -1,8 +1,8 @@
-import { render, screen } from '@testing-library/react';
-import { Timer } from '../components/Timer';
-import { vi } from 'vitest';
+import { render, screen } from "@testing-library/react";
+import { Timer } from "../components/Timer";
+import { vi } from "vitest";
 
-describe('Timer Component', () => {
+describe("Timer Component", () => {
   beforeEach(() => {
     vi.clearAllTimers();
     vi.useFakeTimers();
@@ -13,56 +13,56 @@ describe('Timer Component', () => {
     vi.useRealTimers();
   });
 
-  it('renders initial timer state correctly', () => {
+  it("renders initial timer state correctly", () => {
     const mockOnTimerUpdate = vi.fn();
-    
+
     render(
-      <Timer 
-        isRunning={false} 
-        currentAlgorithm="" 
-        onTimerUpdate={mockOnTimerUpdate} 
+      <Timer
+        isRunning={false}
+        currentAlgorithm=""
+        onTimerUpdate={mockOnTimerUpdate}
       />
     );
 
-    expect(screen.getByText('Current Timer: 0.000s')).toBeInTheDocument();
+    expect(screen.getByText("Current Timer: 0.000s")).toBeInTheDocument();
   });
 
-  it('displays algorithm name when running', () => {
+  it("displays algorithm name when running", () => {
     const mockOnTimerUpdate = vi.fn();
-    
+
     render(
-      <Timer 
-        isRunning={true} 
-        currentAlgorithm="BFS" 
-        onTimerUpdate={mockOnTimerUpdate} 
+      <Timer
+        isRunning={true}
+        currentAlgorithm="BFS"
+        onTimerUpdate={mockOnTimerUpdate}
       />
     );
 
     expect(screen.getByText(/Running: BFS/)).toBeInTheDocument();
   });
 
-  it('does not display algorithm name when not running', () => {
+  it("does not display algorithm name when not running", () => {
     const mockOnTimerUpdate = vi.fn();
-    
+
     render(
-      <Timer 
-        isRunning={false} 
-        currentAlgorithm="BFS" 
-        onTimerUpdate={mockOnTimerUpdate} 
+      <Timer
+        isRunning={false}
+        currentAlgorithm="BFS"
+        onTimerUpdate={mockOnTimerUpdate}
       />
     );
 
     expect(screen.queryByText(/Running: BFS/)).not.toBeInTheDocument();
   });
 
-  it('calls onTimerUpdate when timer is running', () => {
+  it("calls onTimerUpdate when timer is running", () => {
     const mockOnTimerUpdate = vi.fn();
-    
+
     render(
-      <Timer 
-        isRunning={true} 
-        currentAlgorithm="BFS" 
-        onTimerUpdate={mockOnTimerUpdate} 
+      <Timer
+        isRunning={true}
+        currentAlgorithm="BFS"
+        onTimerUpdate={mockOnTimerUpdate}
       />
     );
 
@@ -73,14 +73,14 @@ describe('Timer Component', () => {
     expect(mockOnTimerUpdate).toHaveBeenCalledWith(expect.any(Number));
   });
 
-  it('resets timer when isRunning changes from true to false', () => {
+  it("resets timer when isRunning changes from true to false", () => {
     const mockOnTimerUpdate = vi.fn();
-    
+
     const { rerender } = render(
-      <Timer 
-        isRunning={true} 
-        currentAlgorithm="BFS" 
-        onTimerUpdate={mockOnTimerUpdate} 
+      <Timer
+        isRunning={true}
+        currentAlgorithm="BFS"
+        onTimerUpdate={mockOnTimerUpdate}
       />
     );
 
@@ -89,25 +89,25 @@ describe('Timer Component', () => {
 
     // Stop the timer
     rerender(
-      <Timer 
-        isRunning={false} 
-        currentAlgorithm="BFS" 
-        onTimerUpdate={mockOnTimerUpdate} 
+      <Timer
+        isRunning={false}
+        currentAlgorithm="BFS"
+        onTimerUpdate={mockOnTimerUpdate}
       />
     );
 
     // Timer should reset to 0
-    expect(screen.getByText('Current Timer: 0.000s')).toBeInTheDocument();
+    expect(screen.getByText("Current Timer: 0.000s")).toBeInTheDocument();
   });
 
-  it('formats time correctly', () => {
+  it("formats time correctly", () => {
     const mockOnTimerUpdate = vi.fn();
-    
+
     render(
-      <Timer 
-        isRunning={true} 
-        currentAlgorithm="BFS" 
-        onTimerUpdate={mockOnTimerUpdate} 
+      <Timer
+        isRunning={true}
+        currentAlgorithm="BFS"
+        onTimerUpdate={mockOnTimerUpdate}
       />
     );
 
