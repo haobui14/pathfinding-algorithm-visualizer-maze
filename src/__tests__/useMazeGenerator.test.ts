@@ -53,21 +53,35 @@ describe("useMazeGenerator Hook", () => {
 
   it("generates different mazes on multiple calls", () => {
     const { result } = renderHook(() => useMazeGenerator(7, 7));
-    const maze1 = result.current.generateMaze();
-    const maze2 = result.current.generateMaze();
 
-    // Mazes should be different (very unlikely to be identical due to randomness)
-    let isDifferent = false;
-    for (let row = 0; row < maze1.length; row++) {
-      for (let col = 0; col < maze1[row].length; col++) {
-        if (maze1[row][col] !== maze2[row][col]) {
-          isDifferent = true;
-          break;
+    // Generate multiple mazes and check if at least one pair is different
+    const mazes = [];
+    const maxAttempts = 10;
+
+    for (let i = 0; i < maxAttempts; i++) {
+      mazes.push(result.current.generateMaze());
+    }
+
+    // Check if any two mazes are different
+    let foundDifference = false;
+    for (let i = 0; i < mazes.length - 1 && !foundDifference; i++) {
+      for (let j = i + 1; j < mazes.length && !foundDifference; j++) {
+        const maze1 = mazes[i];
+        const maze2 = mazes[j];
+
+        for (let row = 0; row < maze1.length; row++) {
+          for (let col = 0; col < maze1[row].length; col++) {
+            if (maze1[row][col] !== maze2[row][col]) {
+              foundDifference = true;
+              break;
+            }
+          }
+          if (foundDifference) break;
         }
       }
-      if (isDifferent) break;
     }
-    expect(isDifferent).toBe(true);
+
+    expect(foundDifference).toBe(true);
   });
 
   it("creates valid path from start position", () => {

@@ -15,11 +15,11 @@ vi.mock("../hooks/useMazeGenerator", () => ({
 
 vi.mock("../hooks/usePathfindingAlgorithms", () => ({
   usePathfindingAlgorithms: () => ({
-    bfs: vi.fn((startNode, maze, onUpdateMaze, onComplete) => {
+    bfs: vi.fn((_, __, ___, onComplete) => {
       // Simulate algorithm completion immediately for testing
       onComplete(1000, "BFS");
     }),
-    dfs: vi.fn((startNode, maze, onUpdateMaze, onComplete) => {
+    dfs: vi.fn((_, __, ___, onComplete) => {
       onComplete(1500, "DFS");
     }),
   }),
